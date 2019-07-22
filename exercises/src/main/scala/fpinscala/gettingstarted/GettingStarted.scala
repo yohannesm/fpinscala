@@ -153,7 +153,7 @@ object PolymorphicFunctions {
     @annotation.tailrec
     def check(ind: Int, cond: Boolean): Boolean = {
       if(ind >= as.length-1) true
-      else check(ind + 1, cond && gt(ind, ind+1))
+      else check(ind + 1, cond && gt(as(ind), as(ind+1)))
     }
     check(0, true)
   }
