@@ -60,15 +60,53 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(head, tail) => Cons(h, tail)
   }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
+  def drop[A](l: List[A], n: Int): List[A] = {
+    if (n==0) l
+    else l match {
+      case Nil => Nil
+      case Cons(head, tail) => drop(tail, n-1)
+    }
+  }
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(head, tail)  =>
+        if(f(head))  dropWhile(tail, f)
+        else l
+    }
+  }
 
-  def init[A](l: List[A]): List[A] = ???
+  def init[A](l: List[A]): List[A] = l match {
+    case Nil => Nil
+    case Cons(_, Nil) => Nil
+    case Cons(head, tail) => Cons(head, init(tail))
+  }
 
-  def length[A](l: List[A]): Int = ???
+  def length[A](l: List[A]): Int =
+    foldRight(l, 0)((l, z) => 1 + z)
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  @annotation.tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
+  }
+
+  def sumFoldLeft(l: List[Int]) = foldLeft(l, 0)(_ + _)
+  def productFoldLeft(l: List[Int]) = foldLeft(l, 1)(_ * _)
+  def lengthFoldLeft[A](l: List[A]) = foldLeft(l, 0)((z, l) => 1 + z)
+
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil[A])((z,head) => Cons(head,z))
+
+  def foldRightByFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(l), z)((b, a) => f(a, b))
+
+  def foldLeftByFoldRight[A,B](l: List[A], z: B)(f: (B,A) => B): B =
+    foldRight(l, (b: B) => b)((a, delayFunc) => b => delayFunc(f(b, a)))(z)
+
+  def append[A](l: List[A], r: List[A]) = foldRight(l, r)(Cons(_, _))
+
+  def concat[A](ll: List[List[A]]): List[A] = foldRight(ll, Nil[A])(append(_, _))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 }
