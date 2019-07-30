@@ -51,8 +51,8 @@ object List { // `List` companion object. Contains functions for creating and wo
 
 
   def tail[A](l: List[A]): List[A] = l match {
-    case Nil => throw new NoSuchElementException()
-    case Cons(head, tail) => tail
+    case Cons(_, tail) => tail
+    case _ => Nil
   }
 
   def setHead[A](l: List[A], h: A): List[A] = l match {
