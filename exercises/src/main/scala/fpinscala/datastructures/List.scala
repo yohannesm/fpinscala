@@ -31,7 +31,7 @@ object List { // `List` companion object. Contains functions for creating and wo
     case _ => 101
   }
 
-  def append[A](a1: List[A], a2: List[A]): List[A] =
+  def appendList[A](a1: List[A], a2: List[A]): List[A] =
     a1 match {
       case Nil => a2
       case Cons(h,t) => Cons(h, append(t, a2))
@@ -96,7 +96,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def productFoldLeft(l: List[Int]) = foldLeft(l, 1)(_ * _)
   def lengthFoldLeft[A](l: List[A]) = foldLeft(l, 0)((z, l) => 1 + z)
 
-  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil[A])((z,head) => Cons(head,z))
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A])((z,head) => Cons(head,z))
 
   def foldRightByFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(reverse(l), z)((b, a) => f(a, b))
@@ -104,11 +104,11 @@ object List { // `List` companion object. Contains functions for creating and wo
   def foldLeftByFoldRight[A,B](l: List[A], z: B)(f: (B,A) => B): B =
     foldRight(l, (b: B) => b)((a, delayFunc) => b => delayFunc(f(b, a)))(z)
 
-  def append[A](l: List[A], r: List[A]) = foldRight(l, r)(Cons(_, _))
+  def append[A](l: List[A], r: List[A]) = foldRightByFoldLeft(l, r)(Cons(_, _))
 
-  def concat[A](ll: List[List[A]]): List[A] = foldRight(ll, Nil[A])(append(_, _))
+  def concat[A](ll: List[List[A]]): List[A] = foldRight(ll, Nil: List[A])(append(_, _))
 
-  def add1(l: List[Int]): List[Int] = foldRight(l, Nil[Int])((h, t) => Cons(h+1, t))
+  def add1(l: List[Int]): List[Int] = foldRight(l, Nil: List[Int])((h, t) => Cons(h+1, t))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = ???
 }
