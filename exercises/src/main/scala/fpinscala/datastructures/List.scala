@@ -170,9 +170,9 @@ object List { // `List` companion object. Contains functions for creating and wo
         }
         case Cons(h, t) =>
           sub match {
-            case Nil => isSubSequence
-            case Cons(hs, _) => {
-              if (h == hs) go(t, sub, isSubSequence = true)
+            case Nil => true
+            case Cons(hs, ts) => {
+              if (h == hs) go(t, ts, isSubSequence = true)
               else go(t, sub, isSubSequence = false)
             }
           }
