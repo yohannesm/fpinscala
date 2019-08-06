@@ -181,9 +181,4 @@ object List { // `List` companion object. Contains functions for creating and wo
     go(l, sub, isSubSequence = true)
   }
 
-//  val l1 = scala.collection.immutable.List(1, 2, 3, 4)
-//  val s1 = scala.collection.immutable.List(1, 2)
-//
-//  l1.containsSlice(s1)
-
 }
