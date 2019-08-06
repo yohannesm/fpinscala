@@ -146,26 +146,44 @@ object List { // `List` companion object. Contains functions for creating and wo
       case (Cons(ha, ta), Cons(hb, tb)) => Cons(f(ha, hb), zipWith(ta, tb)(f))
     }
 
-  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
+  @annotation.tailrec
+  def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
+    case (_, Nil)                              => true
+    case (Cons(h, t), Cons(h2, t2)) if h == h2 => startsWith(t, t2)
+    case _                                     => false
+  }
+  @annotation.tailrec
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = l match {
+    case Nil                     => sub == Nil
+    case _ if startsWith(l, sub) => true
+    case Cons(_, t)              => hasSubsequence(t, sub)
+  }
+
+  def myHasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
     def go[A](l: List[A], sub: List[A], isSubSequence: Boolean): Boolean =
       l match {
         case Nil => {
           sub match {
-            case Nil => isSubSequence
-            case _   => false
+            case Nil => sub == Nil
+            case _   => isSubSequence
           }
         }
         case Cons(h, t) =>
           sub match {
             case Nil => isSubSequence
-            case Cons(hs, ts) => {
-              if (h == hs) go(t, ts, isSubSequence = true)
-              else go(t, ts, isSubSequence = false)
+            case Cons(hs, _) => {
+              if (h == hs) go(t, sub, isSubSequence = true)
+              else go(t, sub, isSubSequence = false)
             }
           }
       }
 
-    go(l, sub, isSubSequence = false)
+    go(l, sub, isSubSequence = true)
   }
+
+//  val l1 = scala.collection.immutable.List(1, 2, 3, 4)
+//  val s1 = scala.collection.immutable.List(1, 2)
+//
+//  l1.containsSlice(s1)
 
 }
