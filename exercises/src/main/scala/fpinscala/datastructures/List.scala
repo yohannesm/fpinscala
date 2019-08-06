@@ -106,11 +106,52 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def append[A](l: List[A], r: List[A]) = foldRightByFoldLeft(l, r)(Cons(_, _))
 
-  def concat[A](ll: List[List[A]]): List[A] = foldRight(ll, Nil: List[A])(append(_, _))
+  def concat[A](ll: List[List[A]]): List[A] = foldRightByFoldLeft(ll, Nil: List[A])(append(_, _))
 
-  def add1(l: List[Int]): List[Int] = foldRight(l, Nil: List[Int])((h, t) => Cons(h+1, t))
+  def add1(l: List[Int]): List[Int] = foldRightByFoldLeft(l, Nil: List[Int])((h, t) => Cons(h+1, t))
 
-  def lstDoubleToLstString(l: List[Double]): List[String] = foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
+  def lstDoubleToLstString(l: List[Double]): List[String] = foldRightByFoldLeft(l, Nil: List[String])((h, t) => Cons(h.toString, t))
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  def map[A,B](l: List[A])(f: A => B): List[B] = foldRightByFoldLeft(l, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] = foldRightByFoldLeft(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+
+  def flatMap[A, B](as: List[A])(f: A => List[B]) : List[B] = foldRightByFoldLeft(as, Nil: List[B])((h, t) => append(f(h), t))
+
+  def filterByFlatmap[A](as: List[A])(f: A => Boolean): List[A] = flatMap(as)(a => if(f(a))  List(a) else Nil)
+
+  //any better impl? These aren't stack safe
+  //might need to implement iterators?
+  def zipInts(la: List[Int], lb: List[Int]): List[Int] = (la, lb) match {
+      case(Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(ha, ta), Cons(hb, tb)) => Cons(ha + hb, zipInts(ta, tb))
+  }
+
+  def zipWith[A](la: List[A], lb: List[A])(f: (A, A) => A): List[A] = (la, lb) match {
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(ha, ta), Cons(hb, tb)) => Cons(f(ha, hb), zipWith(ta, tb)(f))
+  }
+
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
+    def go[A](l: List[A], sub: List[A], isSubSequence: Boolean): Boolean = l match {
+      case Nil => {
+        sub match {
+          case Nil => isSubSequence
+          case _ => false
+        }
+      }
+      case Cons(h, t) => sub match {
+        case Nil => isSubSequence
+        case Cons(hs, ts) => {
+          if(h == hs) go(t, ts, isSubSequence = true)
+          else go(t, ts, isSubSequence = false)
+        }
+      }
+    }
+
+    go(l, sub, isSubSequence = false)
+  }
+
 }
