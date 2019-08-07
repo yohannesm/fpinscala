@@ -52,7 +52,8 @@ object Option {
     else Some(xs.sum / xs.length)
   def variance(xs: Seq[Double]): Option[Double] = ???
 
-  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
+    a.flatMap(va => b.map(vb => f(va, vb)))
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = ???
 
