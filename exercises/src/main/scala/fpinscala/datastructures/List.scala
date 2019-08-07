@@ -21,6 +21,11 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(x, xs)  => x * product(xs)
   }
 
+  def head[A](l: List[A]): A = l match {
+    case Nil        => throw new RuntimeException("List is empty")
+    case Cons(h, _) => h
+  }
+
   def apply[A](as: A*): List[A] = // Variadic function syntax
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
@@ -160,25 +165,18 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   def myHasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
-    def go[A](l: List[A], sub: List[A], isSubSequence: Boolean): Boolean =
-      l match {
-        case Nil => {
-          sub match {
-            case Nil => sub == Nil
-            case _   => isSubSequence
-          }
-        }
-        case Cons(h, t) =>
-          sub match {
-            case Nil => true
-            case Cons(hs, ts) => {
-              if (h == hs) go(t, ts, isSubSequence = true)
-              else go(t, sub, isSubSequence = false)
-            }
-          }
+    @annotation.tailrec
+    def go[A](l: List[A], currentSub: List[A], origSub: List[A]): Boolean =
+      (l, currentSub) match {
+        case (_, Nil)                              => true
+        case (Cons(h, t), Cons(hs, ts)) if h == hs => go(t, ts, origSub)
+        case (Cons(h, t), Cons(hs, _)) if h != hs && hs == List.head(origSub) =>
+          go(t, origSub, origSub)
+        case (Cons(h, _), Cons(hs, _)) if h != hs && hs != List.head(origSub) =>
+          go(l, origSub, origSub)
+        case _ => false
       }
-
-    go(l, sub, isSubSequence = true)
+    go(l, sub, sub)
   }
 
 }
