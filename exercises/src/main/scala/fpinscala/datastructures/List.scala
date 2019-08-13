@@ -168,10 +168,14 @@ object List { // `List` companion object. Contains functions for creating and wo
     @annotation.tailrec
     def go[A](l: List[A], currentSub: List[A], origSub: List[A]): Boolean =
       (l, currentSub) match {
-        case (_, Nil)                              => true
+        case (_, Nil) => true
+        //partial match in progress, passing tail and tailsub until Nil
         case (Cons(h, t), Cons(hs, ts)) if h == hs => go(t, ts, origSub)
+        //current match fails, passing in original sub as sublist to retry
         case (Cons(h, t), Cons(hs, _)) if h != hs && hs == List.head(origSub) =>
           go(t, origSub, origSub)
+        //this case happens in the middle of partial match and it fails.
+        //recurse with the original list again, and retry
         case (Cons(h, _), Cons(hs, _)) if h != hs && hs != List.head(origSub) =>
           go(l, origSub, origSub)
         case _ => false
