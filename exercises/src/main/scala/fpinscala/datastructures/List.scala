@@ -151,6 +151,19 @@ object List { // `List` companion object. Contains functions for creating and wo
       case (Cons(ha, ta), Cons(hb, tb)) => Cons(f(ha, hb), zipWith(ta, tb)(f))
     }
 
+  def zipWith_r1[A](la: List[A], lb: List[A])(f: (A, A) => A): List[A] = {
+    @annotation.tailrec
+    def builder[A](la: List[A], lb: List[A], rlist: List[A])(
+        f: (A, A) => A): List[A] =
+      if (la == Nil || lb == Nil) rlist
+      else
+        builder(tail(la),
+                tail(lb),
+                Cons(f(List.head(la), List.head(lb)), rlist))(f)
+
+    reverse(builder(la, lb, Nil)(f))
+  }
+
   @annotation.tailrec
   def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match {
     case (_, Nil)                              => true
@@ -171,7 +184,7 @@ object List { // `List` companion object. Contains functions for creating and wo
         case (_, Nil) => true
         //partial match in progress, passing tail and tailsub until Nil
         case (Cons(h, t), Cons(hs, ts)) if h == hs => go(t, ts, origSub)
-        //current match fails, passing in original sub as sublist to retry
+        //current match fails, passing in rest of tail + original sub as sublist to retry
         case (Cons(h, t), Cons(hs, _)) if h != hs && hs == List.head(origSub) =>
           go(t, origSub, origSub)
         //this case happens in the middle of partial match and it fails.

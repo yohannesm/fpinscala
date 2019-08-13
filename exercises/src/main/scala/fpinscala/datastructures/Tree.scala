@@ -35,7 +35,7 @@ object Tree {
     fold(bt)(_ => 1)((b1, b2) => 1 + b1 + b2)
 
   def maxByFold(bt: Tree[Int]): Int =
-    fold(bt)(identity(_))((b1, b2) => Math.max(b1, b2))
+    fold(bt)(identity)((b1, b2) => Math.max(b1, b2))
 
   def depthByFold(bt: Tree[Int]): Int =
     fold(bt)(_ => 0)((b1, b2) => 1 + Math.max(b1, b2))
