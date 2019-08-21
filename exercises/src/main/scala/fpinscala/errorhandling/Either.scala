@@ -97,7 +97,9 @@ sealed trait EitherL[+E, +A] {
         }
     }
 
-  //flatmap is impossible because of the function type it's being passed on, but if we pass it from EitherL to EitherL might be possible
+  //flatmap is impossible because of the function type it's being passed on (need to be
+  // f: A => EitherL[EE, B], which can't accumulate errors because we will lose the list in LLeft
+  // , but if we pass it a function that goes from EitherL to EitherL might be possible
 
   def bizarreFlatMap[EE >: E, B](
       f: EitherL[EE, A] => EitherL[EE, B]): EitherL[EE, B] =

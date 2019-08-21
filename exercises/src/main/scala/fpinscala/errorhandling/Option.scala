@@ -58,6 +58,8 @@ object Option {
   def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
     a.flatMap(va => b.map(vb => f(va, vb)))
 
+  def mapN[A, B](a: Option[A]*)(f: A => B): Option[B] = ???
+
   def map2ByForComprehension[A, B, C](a: Option[A], b: Option[B])(
       f: (A, B) => C): Option[C] = {
     for {
