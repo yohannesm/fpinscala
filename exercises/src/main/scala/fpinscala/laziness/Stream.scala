@@ -50,8 +50,8 @@ trait Stream[+A] {
     filter(p).headOption
 
   def take(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 1  => cons(h(), t().take(n - 1))
     case Cons(h, _) if n == 1 => cons(h(), empty)
-    case Cons(h, t)           => cons(h(), t().take(n - 1))
     case _                    => empty
   }
 
@@ -116,8 +116,25 @@ object Stream {
     else cons(as.head, apply(as.tail: _*))
 
   val ones: Stream[Int] = Stream.cons(1, ones)
-  def from(n: Int): Stream[Int] = ???
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = ???
+  //simple solution for constant[A](a: A): Stream[A]
+  def simpleConstant[A](a: A): Stream[A] = Stream.cons(a, simpleConstant(a))
+
+  def constant[A](a: A): Stream[A] = {
+    lazy val tail: Stream[A] = cons(a, tail)
+    tail
+  }
+
+  def from(n: Int): Stream[Int] = cons(n, from(n + 1))
+
+  def fibs(n: Int): Stream[Int] = {
+    def go(f0: Int, f1: Int): Stream[Int] = cons(f0, go(f1, f0 + f1))
+    go(0, 1)
+  }
+
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((a, s)) => cons(a, unfold(s)(f))
+    case None         => empty[A]
+  }
 
 }
