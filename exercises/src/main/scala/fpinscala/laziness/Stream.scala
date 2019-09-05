@@ -45,9 +45,13 @@ trait Stream[+A] {
     case Empty      => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
+
+  def functionalFind(p: A => Boolean): Option[A] =
+    filter(p).headOption
+
   def take(n: Int): Stream[A] = this match {
-    case Cons(h, t)           => cons(h(), t().take(n - 1))
     case Cons(h, _) if n == 1 => cons(h(), empty)
+    case Cons(h, t)           => cons(h(), t().take(n - 1))
     case _                    => empty
   }
 
@@ -72,12 +76,11 @@ trait Stream[+A] {
 
   def headOption: Option[A] = this match {
     case Cons(h, _) => Some(h())
-    case Empty      => None
     case _          => None
   }
 
   def headOptionFR: Option[A] =
-    foldRight(None[A])((h, _) => Some(h))
+    foldRight(None: Option[A])((h, _) => Some(h))
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
