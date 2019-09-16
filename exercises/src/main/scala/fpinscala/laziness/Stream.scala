@@ -140,16 +140,18 @@ trait Stream[+A] {
     unfold((this, s2)) {
       case (Empty, Empty) => None
       case (Cons(h1, t1), Empty) =>
-        Some(f(Some(h1()), None[B]) -> (t1(), Stream.empty[B]))
+        Some(f(Some(h1()), None) -> (t1(), Stream.empty[B]))
       case (Empty, Cons(h2, t2)) =>
-        Some(f(None[A], Some(h2())) -> (Stream.empty[A] -> t2()))
+        Some(f(None, Some(h2())) -> (Stream.empty[A] -> t2()))
       case (Cons(h1, t1), Cons(h2, t2)) =>
         Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
+      case _ => None
     }
 
   def startsWith[A](subStream: Stream[A]): Boolean = {
     zipAll(subStream).takeWhile(_._2.isDefined).forAll {
       case (Some(h1), Some(h2)) => h1 == h2
+      case _                    => false
     }
   }
 
@@ -166,7 +168,7 @@ trait Stream[+A] {
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
     foldRight((z, Stream.apply(z)))((a, bAndStreamB) => {
       lazy val cachedBTuples = bAndStreamB
-      val appliedB = f((a, cachedBTuples._1))
+      val appliedB = f(a, cachedBTuples._1)
       (appliedB, Stream.cons(appliedB, cachedBTuples._2))
     })._2
 
@@ -174,7 +176,7 @@ trait Stream[+A] {
   def scanRight0[B](z: B)(f: (A, => B) => B): Stream[B] =
     foldRight(ScannerAccumulator(z, Stream.apply(z)))((a, scannerAcc) => {
       lazy val cachedScannerAcc = scannerAcc
-      val appliedBValue = f((a, cachedScannerAcc.currentValue))
+      val appliedBValue = f(a, cachedScannerAcc.currentValue)
       val result =
         ScannerAccumulator(appliedBValue,
                            Stream.cons(appliedBValue, cachedScannerAcc.stream))
