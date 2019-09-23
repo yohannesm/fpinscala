@@ -1,6 +1,5 @@
 package fpinscala.state
 
-
 trait RNG {
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
 }
@@ -24,35 +23,58 @@ object RNG {
   def unit[A](a: A): Rand[A] =
     rng => (a, rng)
 
-  def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
     rng => {
       val (a, rng2) = s(rng)
       (f(a), rng2)
     }
 
-  def nonNegativeInt(rng: RNG): (Int, RNG) = ???
+  case class ValAndRNG[A](v: A, rng: RNG)
 
-  def double(rng: RNG): (Double, RNG) = ???
+  def nonNegativeInt(rng: RNG): (Int, RNG) = {
+    val res = rng.nextInt
+    //val vrng = ValAndRNG(res._1, res._2)
+    //val vrng2 = (ValAndRNG.apply _) tupled res
+    if (res._1 < 0) (res._1 + 1, res._2)
+    else res
+  }
 
-  def intDouble(rng: RNG): ((Int,Double), RNG) = ???
+  def double(rng: RNG): (Double, RNG) = {
+    val (posInt, rng2) = nonNegativeInt(rng)
+    (posInt / (Int.MaxValue.toDouble + 1), rng2)
+  }
 
-  def doubleInt(rng: RNG): ((Double,Int), RNG) = ???
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
+    val intVal = rng.nextInt
+    val doubleVal = double(intVal._2)
+    ((intVal._1, doubleVal._1), doubleVal._2)
+  }
 
-  def double3(rng: RNG): ((Double,Double,Double), RNG) = ???
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+    val ((i, d), rng2) = intDouble(rng)
+    ((d, i), rng2)
+  }
+
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val d1 = double(rng)
+    val d2 = double(d1._2)
+    val d3 = double(d2._2)
+    ((d1._1, d2._1, d3._1), d3._2)
+  }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
 
-  def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
 }
 
-case class State[S,+A](run: S => (A, S)) {
+case class State[S, +A](run: S => (A, S)) {
   def map[B](f: A => B): State[S, B] =
     ???
-  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+  def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
     ???
   def flatMap[B](f: A => State[S, B]): State[S, B] =
     ???
