@@ -40,8 +40,12 @@ object RNG {
   }
 
   def double(rng: RNG): (Double, RNG) = {
-    val (posInt, rng2) = nonNegativeInt(rng)
-    (posInt / (Int.MaxValue.toDouble + 1), rng2)
+    val (posInt1, rng2) = nonNegativeInt(rng)
+    val (posInt2, rng3) = nonNegativeInt(rng2)
+    val dblVal =
+      if (posInt1 > posInt2) posInt2 / posInt1.doubleValue()
+      else posInt1 / posInt2.doubleValue()
+    (dblVal, rng2)
   }
 
   def intDouble(rng: RNG): ((Int, Double), RNG) = {
