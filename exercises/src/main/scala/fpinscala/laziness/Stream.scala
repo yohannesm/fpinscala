@@ -68,6 +68,21 @@ trait Stream[+A] {
   def forAll(p: A => Boolean): Boolean =
     foldRight(true)((a, b) => p(a) && b)
 
+  def forAll2(p: A => Boolean): Boolean = {
+    @annotation.tailrec
+    def go(acc: Boolean, s: Stream[A]): Boolean = {
+      if (!acc) false
+      else {
+        s match {
+          case Cons(h, t) => go(acc && p(h()), t())
+          case _          => acc
+        }
+      }
+    }
+
+    go(true, this)
+  }
+
   def takeWhileFR(p: A => Boolean): Stream[A] =
     foldRight(empty[A])(
       (h, t) =>
