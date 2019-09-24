@@ -3,7 +3,7 @@ package fpinscala.laziness
 import Stream._
 trait Stream[+A] {
 
-  def toList: List[A] = toListTailRec
+  def toList: List[A] = toListOptimized
 
   def toListRecursive: List[A] = this match {
     case Cons(h, t) => h() :: t().toListRecursive
