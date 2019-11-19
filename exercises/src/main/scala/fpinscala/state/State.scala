@@ -35,8 +35,14 @@ object RNG {
     val res = rng.nextInt
     //val vrng = ValAndRNG(res._1, res._2)
     //val vrng2 = (ValAndRNG.apply _) tupled res
-    if (res._1 < 0) (res._1 + 1, res._2)
+    if (res._1 < 0) (-(res._1 + 1), res._2)
     else res
+  }
+
+  def nonNegativeInt2(rng: RNG): (Int, RNG) = {
+    val (num, seed) = rng.nextInt
+    if (num == Int.MinValue) (0, seed)
+    else (Math.abs(num), seed)
   }
 
   def double(rng: RNG): (Double, RNG) = {
@@ -64,6 +70,10 @@ object RNG {
     val d2 = double(d1._2)
     val d3 = double(d2._2)
     ((d1._1, d2._1, d3._1), d3._2)
+  }
+
+  def doubleWithMap(rng: RNG): Rand[Double] = {
+    map[Int, Double](nonNegativeInt)(x => x / Int.MaxValue + 1)
   }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???

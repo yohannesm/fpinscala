@@ -66,7 +66,7 @@ trait Stream[+A] {
   }
 
   def forAll(p: A => Boolean): Boolean =
-    foldRight(true)((a, b) => p(a) && b)
+    foldRight(true)((h, t) => p(h) && t)
 
   def forAll2(p: A => Boolean): Boolean = {
     @annotation.tailrec
@@ -189,9 +189,9 @@ trait Stream[+A] {
 
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
     foldRight((z, Stream.apply(z)))((a, bAndStreamB) => {
-      lazy val cachedBTuples = bAndStreamB
-      val appliedB = f(a, cachedBTuples._1)
-      (appliedB, Stream.cons(appliedB, cachedBTuples._2))
+      lazy val (elB, streamB) = bAndStreamB
+      val appliedB = f(a, elB)
+      (appliedB, Stream.cons(appliedB, streamB))
     })._2
 
   case class ScannerAccumulator[B](currentValue: B, stream: Stream[B])
