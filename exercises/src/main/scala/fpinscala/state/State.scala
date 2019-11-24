@@ -47,7 +47,7 @@ object RNG {
 
   def double(rng: RNG): (Double, RNG) = {
     val (posInt1, rng2) = nonNegativeInt(rng)
-    val (posInt2, rng3) = nonNegativeInt(rng2)
+    val (posInt2, _) = nonNegativeInt(rng2)
     val dblVal =
       if (posInt1 > posInt2) posInt2 / posInt1.doubleValue()
       else posInt1 / posInt2.doubleValue()
@@ -76,7 +76,30 @@ object RNG {
     map[Int, Double](nonNegativeInt)(x => x / Int.MaxValue + 1)
   }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    def go(count: Int, rng: RNG, result: List[Int]): (List[Int], RNG) = {
+      if (count <= 0)
+        (result, rng)
+      else {
+        val (n, rng2) = rng.nextInt
+        go(count - 1, rng2, result :+ n)
+      }
+    }
+    go(count, rng, List.empty[Int])
+  }
+
+  def intsWithWhile(count: Int)(rng: RNG): (List[Int], RNG) = {
+    var ct = count
+    var res = Vector[Int]()
+    var tempRNG = rng
+    while (ct > 0) {
+      val (n, rng2) = tempRNG.nextInt
+      res = res :+ n
+      tempRNG = rng2
+      ct -= 1
+    }
+    (res.toList, rng)
+  }
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
