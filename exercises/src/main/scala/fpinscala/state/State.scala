@@ -126,9 +126,30 @@ object RNG {
 
   val randDoubleInt: Rand[(Double, Int)] = both(double, int)
 
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+    fs.foldLeft(unit(List[A]()))((acc, curr) =>
+      map2(acc, curr)((listA, a) => listA :+ a))
+  }
+  def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
 
-  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  def intsViaFoldLeft(count: Int): Rand[List[Int]] =
+    sequence(List.fill(count)(int))
+
+  def nonNegativeLessThan(n: Int): Rand[Int] =
+    rng => {
+      val (resultCandidate, rng2) = nonNegativeInt(rng)
+      val mod = resultCandidate % n
+      if (resultCandidate + (n - 1) - mod >= 0)
+        (mod, rng2)
+      else nonNegativeLessThan(n)(rng)
+    }
+
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rng => {
+      val (a, r1) = f(rng)
+      g(a)(r1)
+    }
 }
 
 case class State[S, +A](run: S => (A, S)) {
