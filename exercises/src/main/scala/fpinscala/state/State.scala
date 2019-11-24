@@ -76,6 +76,17 @@ object RNG {
     map[Int, Double](nonNegativeInt)(x => x / Int.MaxValue + 1)
   }
 
+  def doubleWithMap2(rng: RNG): Rand[Double] = {
+    map[Int, Double](int)(x => x / Int.MinValue)
+  }
+
+  def doubleWithMap3(rng: RNG): Rand[Double] = {
+    val (a, r1) = doubleWithMap(rng)(rng)
+    val (b, r2) = doubleWithMap2(r1)(r1)
+    r2 =>
+      (a * b, r2)
+  }
+
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
     def go(count: Int, rng: RNG, result: List[Int]): (List[Int], RNG) = {
       if (count <= 0)
@@ -101,7 +112,19 @@ object RNG {
     (res.toList, rng)
   }
 
-  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a, r1) = ra(rng)
+      val (b, r2) = rb(r1)
+      (f(a, b), r2)
+    }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, double)
+
+  val randDoubleInt: Rand[(Double, Int)] = both(double, int)
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = ???
 
