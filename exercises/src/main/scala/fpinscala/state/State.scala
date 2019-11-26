@@ -48,6 +48,7 @@ object RNG {
   def double(rng: RNG): (Double, RNG) = {
     val (posInt1, rng2) = nonNegativeInt(rng)
     val (posInt2, _) = nonNegativeInt(rng2)
+    //FIXME: check for 0
     val dblVal =
       if (posInt1 > posInt2) posInt2 / posInt1.doubleValue()
       else posInt1 / posInt2.doubleValue()
@@ -88,6 +89,7 @@ object RNG {
   }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    @annotation.tailrec
     def go(count: Int, rng: RNG, result: List[Int]): (List[Int], RNG) = {
       if (count <= 0)
         (result, rng)
@@ -136,13 +138,13 @@ object RNG {
   def intsViaFoldLeft(count: Int): Rand[List[Int]] =
     sequence(List.fill(count)(int))
 
-  def nonNegativeLessThan(n: Int): Rand[Int] =
+  def nonNegativeLessThanTry(n: Int): Rand[Int] =
     rng => {
       val (resultCandidate, rng2) = nonNegativeInt(rng)
       val mod = resultCandidate % n
       if (resultCandidate + (n - 1) - mod >= 0)
         (mod, rng2)
-      else nonNegativeLessThan(n)(rng)
+      else nonNegativeLessThanTry(n)(rng2)
     }
 
   def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
@@ -150,6 +152,12 @@ object RNG {
       val (a, r1) = f(rng)
       g(a)(r1)
     }
+
+//  def nonNegativeLessThan(n: Int): Rand[Int] =
+//    flatMap(nonNegativeInt) { i =>
+//      val mod = i % n
+//      if (i + (n - 1) - mod >= 0) mod else nonNegativeLessThan(n)
+//    }
 }
 
 case class State[S, +A](run: S => (A, S)) {
